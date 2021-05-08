@@ -26,7 +26,7 @@ class ProductServiceImpl(
         val product = productRepository.findByIdOrNull(productId) ?: throw NotFoundException("Product not found")
         val newQuantity = product.quantity + quantity
         if (newQuantity < 0) throw RuntimeException()
-        productRepository.updateQuantity(newQuantity,productId)
+        //productRepository.updateQuantity(newQuantity,productId)
         product.quantity=newQuantity
         return product.toProductDTO()
     }
