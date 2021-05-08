@@ -6,6 +6,7 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class WarehouseMvcApplication
 
-fun main(args: Array<String>) {
+fun main(args: Array<String>)
+{
     runApplication<WarehouseMvcApplication>(*args)
 }

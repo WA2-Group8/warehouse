@@ -5,6 +5,8 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.spring") version "1.4.32"
+    kotlin("plugin.jpa") version "1.4.31"
+    kotlin("plugin.allopen") version "1.4.31"
 }
 
 group = "it.polito.wa2group8"
@@ -30,6 +32,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.hibernate.validator:hibernate-validator")
+    implementation("javax.validation:validation-api")
 }
 
 tasks.withType<KotlinCompile> {
