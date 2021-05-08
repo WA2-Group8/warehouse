@@ -32,15 +32,15 @@ class ProductServiceImpl(
     }
 
     override fun retrieveProduct(id: Long): ProductDTO? {
-        TODO("Not yet implemented")
+        val product = productRepository.findByIdOrNull(id) ?: throw NotFoundException("Product not found")
+        return product.toProductDTO()
     }
 
     override fun retrieveAllProducts(): Set<ProductDTO> {
-        TODO("Not yet implemented")
+        return productRepository.findAll().map { it.toProductDTO() }.toSet()
     }
 
     override fun retrieveProductsByCategory(category: String): Set<ProductDTO> {
         TODO("Not yet implemented")
     }
-
 }
