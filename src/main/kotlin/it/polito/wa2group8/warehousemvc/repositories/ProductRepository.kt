@@ -10,10 +10,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ProductRepository:CrudRepository<Product,Long> {
 
-    /*
     @Modifying
-    @Query("UPDATE product p SET p.quantity= :quantity WHERE p.id = :productId")
+    @Query("UPDATE Product p SET p.quantity= :quantity WHERE p.id = :productId")
     fun updateQuantity(quantity: Int, productId:Long)
-    */
     fun findByCategory(category: String): Iterable<Product>
 }
