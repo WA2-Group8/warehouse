@@ -40,8 +40,10 @@ class ProductController(
     }
 
     @GetMapping(value=["/warehouse/products"], produces=[MediaType.APPLICATION_JSON_VALUE])
-    fun getAllProducts(): ResponseEntity<Any>
+    fun getAllProducts(
+        @RequestParam("category") category: String
+    ): ResponseEntity<Any>
     {
-        return ResponseEntity.ok().body(productService.retrieveAllProducts())
+        return ResponseEntity.ok().body(productService.retrieveProductsByCategory(category))
     }
 }

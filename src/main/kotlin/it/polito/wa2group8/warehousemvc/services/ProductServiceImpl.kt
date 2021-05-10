@@ -41,6 +41,6 @@ class ProductServiceImpl(
     }
 
     override fun retrieveProductsByCategory(category: String): Set<ProductDTO> {
-        TODO("Not yet implemented")
+        return productRepository.findByCategory(category).map { it.toProductDTO() }.toSet()
     }
 }

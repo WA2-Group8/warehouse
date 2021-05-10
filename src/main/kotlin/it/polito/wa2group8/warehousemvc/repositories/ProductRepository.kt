@@ -15,4 +15,5 @@ interface ProductRepository:CrudRepository<Product,Long> {
     @Query("UPDATE product p SET p.quantity= :quantity WHERE p.id = :productId")
     fun updateQuantity(quantity: Int, productId:Long)
     */
+    fun findByCategory(category: String): Iterable<Product>
 }
