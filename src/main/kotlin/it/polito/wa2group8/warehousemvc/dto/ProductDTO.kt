@@ -2,13 +2,11 @@ package it.polito.wa2group8.warehousemvc.dto
 
 import it.polito.wa2group8.warehousemvc.domain.Product
 import java.math.BigDecimal
-import java.math.BigInteger
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
 
 data class ProductDTO (
-    var id: Long,
+    var id: Long?,
 
     @get:NotEmpty
     val name: String,
@@ -22,4 +20,4 @@ data class ProductDTO (
     val quantity: Int
 )
 
-fun Product.toProductDTO() = ProductDTO(id ?: -1, name, category, price, quantity)
+fun Product.toProductDTO() = ProductDTO(id, name, category, price, quantity)
