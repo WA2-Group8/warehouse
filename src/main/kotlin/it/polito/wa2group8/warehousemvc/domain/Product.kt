@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotEmpty
 
 @Entity
 class Product(
@@ -14,8 +15,10 @@ class Product(
     @GeneratedValue(strategy=GenerationType.AUTO)
     var id: Long?,
 
+    @get:NotEmpty
     var name: String,
 
+    @get:NotEmpty
     var category: String,
 
     @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)

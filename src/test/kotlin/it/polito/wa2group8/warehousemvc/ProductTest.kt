@@ -3,14 +3,11 @@ package it.polito.wa2group8.warehousemvc
 import it.polito.wa2group8.warehousemvc.domain.Product
 import it.polito.wa2group8.warehousemvc.repositories.ProductRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.hibernate.annotations.SQLInsert
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.jdbc.Sql
 import java.math.BigDecimal
 import javax.persistence.EntityManager
 import javax.validation.ConstraintViolationException
