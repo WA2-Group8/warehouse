@@ -1,29 +1,40 @@
 package it.polito.wa2group8.warehousemvc.domain
 
-import javax.persistence.Id
+import org.springframework.format.annotation.DateTimeFormat
 import java.math.BigDecimal
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
+import java.util.*
+import javax.persistence.*
 import javax.validation.constraints.DecimalMin
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotEmpty
 
 @Entity
 class Product(
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    var id: Long?,
+        @Id
+        @GeneratedValue(strategy=GenerationType.AUTO)
+        var id: Long?,
 
-    @get:NotEmpty
-    var name: String,
+        @get:NotEmpty
+        var name: String,
 
-    @get:NotEmpty
-    var category: String,
+        @get:NotEmpty
+        var description: String,
 
-    @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
-    var price: BigDecimal,
+        @get:NotEmpty
+        var pictureURL: String,
 
-    @get:Min(value=0, message = "Quantity cannot be negative")
-    var quantity: Int
-)
+        @get:NotEmpty
+        var category: String,
+
+        @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
+        var price: BigDecimal,
+
+        @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
+        var averageRating: BigDecimal,
+
+        @get:DateTimeFormat
+        var creationDate: Date
+
+){
+    @OneToMany(mappedBy = "product", targetEntity = Comment::class, fetch = FetchType.LAZY)
+    var comments: MutableList<Comment> = mutableListOf()
+}
