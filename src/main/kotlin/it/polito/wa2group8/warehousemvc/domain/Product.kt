@@ -35,6 +35,9 @@ class Product(
         var creationDate: Date
 
 ){
-    @OneToMany(mappedBy = "product", targetEntity = Comment::class, fetch = FetchType.LAZY)
-    var comments: MutableList<Comment> = mutableListOf()
+        @OneToMany(mappedBy = "product", targetEntity = Comment::class, fetch = FetchType.LAZY)
+        var comments: MutableList<Comment> = mutableListOf()
+
+        @OneToMany(mappedBy = "product", targetEntity = ProductStore::class, fetch = FetchType.LAZY)
+        var warehouses: MutableList<ProductStore> = mutableListOf()
 }
