@@ -3,19 +3,19 @@ package it.polito.wa2group8.warehousemvc.domain
 import javax.persistence.*
 
 @Entity
-class ProductStore {
-    @EmbeddedId
-    var id: ProductStoreKey? = null
+class ProductStore (
+        @EmbeddedId
+        var id: ProductStoreKey?,
 
-    @ManyToOne
-    //@MapsId("studentId")
-    @JoinColumn(name = "product", referencedColumnName = "productId")
-    var product: Product? = null
+        @ManyToOne(fetch = FetchType.LAZY)
+        @MapsId("productId")
+        @JoinColumn(name = "product", referencedColumnName = "id")
+        var product: Product,
 
-    @ManyToOne
-    //@MapsId("courseId")
-    @JoinColumn(name = "warehouse", referencedColumnName = "warehouseId")
-    var warehouse: Warehouse? = null
+        @ManyToOne(fetch = FetchType.LAZY)
+        @MapsId("warehouseId")
+        @JoinColumn(name = "warehouse", referencedColumnName = "id")
+        var warehouse: Warehouse,
 
-    var quantity = 0
-}
+        var quantity: Int
+)

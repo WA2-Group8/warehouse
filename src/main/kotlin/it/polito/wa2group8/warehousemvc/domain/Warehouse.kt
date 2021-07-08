@@ -1,13 +1,11 @@
 package it.polito.wa2group8.warehousemvc.domain
 
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.Id
-import javax.persistence.OneToMany
+import javax.persistence.*
 
 @Entity
 class Warehouse (
         @Id
+        @GeneratedValue(strategy= GenerationType.AUTO)
         var id: Long?
 ){
         @OneToMany(mappedBy = "warehouse", targetEntity = ProductStore::class, fetch = FetchType.LAZY)

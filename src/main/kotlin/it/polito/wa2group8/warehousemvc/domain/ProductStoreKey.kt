@@ -1,17 +1,20 @@
 package it.polito.wa2group8.warehousemvc.domain
 
 import java.io.Serializable
+import javax.persistence.Column
 import javax.persistence.Embeddable
 
-
 @Embeddable
-class ProductStoreKey : Serializable {
+class ProductStoreKey(
 
-    var productId: Long? = null
+        @Column(name = "product_id")
+        var productId : Long?,
 
-    var warehouseId: Long? = null
+        @Column(name = "warehouse_id")
+        var warehouseId: Long?
 
-    // hashcode and equals implementation
+) : Serializable {
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -29,4 +32,5 @@ class ProductStoreKey : Serializable {
         result = 31 * result + (warehouseId?.hashCode() ?: 0)
         return result
     }
+
 }

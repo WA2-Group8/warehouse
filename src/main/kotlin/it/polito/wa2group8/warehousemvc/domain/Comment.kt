@@ -27,6 +27,6 @@ class Comment (
         var creationDate: Date,
 
         @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "product", referencedColumnName = "productId")
+        @JoinColumn(name = "product", referencedColumnName = "id")
         var product: Product
 )
