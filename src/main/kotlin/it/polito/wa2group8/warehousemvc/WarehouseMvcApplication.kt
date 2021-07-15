@@ -1,6 +1,6 @@
 package it.polito.wa2group8.warehousemvc
 
-import it.polito.wa2group8.warehousemvc.domain.Comment
+import it.polito.wa2group8.warehousemvc.domain.*
 import it.polito.wa2group8.warehousemvc.repositories.ProductRepository
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -8,9 +8,6 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 
 //N.B: Not deleted because these imports are used if rows from 20 to 26 are uncommented
-import it.polito.wa2group8.warehousemvc.domain.Product
-import it.polito.wa2group8.warehousemvc.domain.ProductStore
-import it.polito.wa2group8.warehousemvc.domain.Warehouse
 import it.polito.wa2group8.warehousemvc.repositories.CommentRepository
 import it.polito.wa2group8.warehousemvc.repositories.ProductStoreRepository
 import it.polito.wa2group8.warehousemvc.repositories.WarehouseRepository
@@ -35,7 +32,8 @@ class WarehouseMvcApplication
             val warehouse = warehouseRepository.save(Warehouse(null))
             val product = productRepository.save(Product(null, "p1", "test", "url", "c1", BigDecimal("0.5"), BigDecimal("0.5"), Date()))
             val comment = commentRepository.save(Comment(null, "t1", "c1", 4, Date(), product))
-            productStoreRepository.save(ProductStore(null, product, warehouse, 10))
+            val key = ProductStoreKey(product.id, warehouse.id)
+            productStoreRepository.save(ProductStore(key, product, warehouse, 10))
         }
     }
 }

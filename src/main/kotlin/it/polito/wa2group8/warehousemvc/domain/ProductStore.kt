@@ -5,7 +5,7 @@ import javax.persistence.*
 @Entity
 class ProductStore (
         @EmbeddedId
-        var id: ProductStoreKey?,
+        var id: ProductStoreKey,
 
         @ManyToOne(fetch = FetchType.LAZY)
         @MapsId("productId")

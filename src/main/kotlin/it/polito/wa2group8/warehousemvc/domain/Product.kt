@@ -1,5 +1,6 @@
 package it.polito.wa2group8.warehousemvc.domain
 
+import it.polito.wa2group8.warehousemvc.dto.ProductDTO
 import org.springframework.format.annotation.DateTimeFormat
 import java.math.BigDecimal
 import java.util.*
@@ -40,4 +41,7 @@ class Product(
 
         @OneToMany(mappedBy = "product", targetEntity = ProductStore::class, fetch = FetchType.LAZY)
         var warehouses: MutableList<ProductStore> = mutableListOf()
+
+        fun toProductDTO() = ProductDTO(id, name, description, pictureURL, category, price, averageRating, creationDate)
 }
+
