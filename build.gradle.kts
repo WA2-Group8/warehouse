@@ -34,6 +34,8 @@ dependencies {
     testImplementation("com.h2database:h2")
     implementation("org.hibernate.validator:hibernate-validator")
     implementation("javax.validation:validation-api")
+    implementation("org.mapstruct:mapstruct:1.4.2.Final")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.4.2.Final")
 }
 
 tasks.withType<KotlinCompile> {

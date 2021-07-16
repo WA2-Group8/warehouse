@@ -10,25 +10,25 @@ data class ProductDTO (
     var id: Long?,
 
     @get:NotEmpty(message="Empty name")
-    val name: String,
+    val name: String?,
 
     @get:NotEmpty
-    var description: String,
+    var description: String?,
 
     @get:NotEmpty
-    var pictureURL: String,
+    var pictureURL: String?,
 
     @get:NotEmpty(message="Empty category")
-    val category: String,
+    val category: String?,
 
     @get:DecimalMin(value="0.0", message="Negative price", inclusive = true)
-    val price: BigDecimal,
+    val price: BigDecimal?,
 
     @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
-    var averageRating: BigDecimal,
+    var averageRating: BigDecimal?,
 
     @get:DateTimeFormat
-    var creationDate: Date
+    var creationDate: Date?
 )
 
 

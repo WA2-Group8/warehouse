@@ -12,42 +12,92 @@ import javax.validation.Valid
 @RestController
 class ProductController(val productService: ProductService)
 {
-    @PostMapping(value=["/warehouse/products"])
+    @GetMapping(value=["/products"], produces=[MediaType.APPLICATION_JSON_VALUE])
+    fun getProducts(
+        @RequestParam("category") category: String
+    ): ResponseEntity<Any>
+    {
+        return ResponseEntity.ok().body(productService.getProducts(category))
+    }
+
+    @GetMapping(value=["/products/{productID}"], produces=[MediaType.APPLICATION_JSON_VALUE])
+    fun getProductByID(
+        @PathVariable productID: Long
+    ): ResponseEntity<Any>
+    {
+        return ResponseEntity.ok().body(productService.getProductById(productID))
+    }
+
+    @PostMapping(value=["/products"])
     @ResponseBody
     fun createProduct(
+        @RequestBody @Valid product: ProductDTO
+    ): ResponseEntity<Any>
+    {
+        return ResponseEntity.status(201).body(productService.createOrUpdateProduct(null, product))
+    }
+
+    @PutMapping(value=["/products/{productID}"])
+    @ResponseBody
+    fun updateOrCreateProduct(
+        @PathVariable productID: Long,
         @RequestBody @Valid product: ProductDTO,
     ): ResponseEntity<Any>
     {
-        return ResponseEntity.status(201).body(productService.createProduct(product))
+        return ResponseEntity.ok().body(productService.createOrUpdateProduct(productID, product))
     }
 
-    @PatchMapping(value=["/warehouse/products/{productID}"])
+    @PatchMapping(value=["/products/{productID}"])
     @ResponseBody
     fun updateProduct(
         @PathVariable productID: Long,
-        @RequestBody @Valid quantityDTO: QuantityDTO,
+        @RequestBody @Valid product: ProductDTO,
     ): ResponseEntity<Any>
     {
-        return ResponseEntity.status(200).body(productService.updateProduct(quantityDTO.quantity, productID))
+        return ResponseEntity.ok().body(productService.updateProduct(productID, product))
     }
 
-    @GetMapping(value=["/warehouse/products/{productID}"], produces=[MediaType.APPLICATION_JSON_VALUE])
-    fun getProductByID(@PathVariable productID: Long): ResponseEntity<Any>
-    {
-        return ResponseEntity.ok().body(productService.retrieveProduct(productID))
-    }
-
-    @GetMapping(value=["/warehouse/products"], produces=[MediaType.APPLICATION_JSON_VALUE])
-    fun getAllProducts(): ResponseEntity<Any>
-    {
-        return ResponseEntity.ok().body(productService.retrieveAllProducts())
-    }
-
-    @GetMapping(value=["/warehouse/productsByCategory"], produces=[MediaType.APPLICATION_JSON_VALUE])
-    fun getProductsByCategory(
-        @RequestParam("category", required=true) category: String
+    @DeleteMapping(value=["/products/{productID}"])
+    @ResponseBody
+    fun deleteProduct(
+        @PathVariable productID: Long
     ): ResponseEntity<Any>
     {
-        return ResponseEntity.ok().body(productService.retrieveProductsByCategory(category))
+        productService.deleteProduct(productID)
+        return ResponseEntity.noContent().build()
     }
+
+    @GetMapping(value=["/products/{productID}/picture"], produces=[MediaType.APPLICATION_JSON_VALUE])
+    fun getProductPicture(
+        @PathVariable productID: Long
+    ): ResponseEntity<Any>
+    {
+        TODO("Not yet implemented")
+    }
+
+    @PostMapping(value=["/products/{productID}/picture"])
+    @ResponseBody
+    fun addProductPicture(
+        @PathVariable productID: Long,
+//        @RequestBody @Valid product: ProductDTO,
+    ): ResponseEntity<Any>
+    {
+        TODO("Not yet implemented")
+    }
+
+    @GetMapping(value=["/products/{productID}/warehouses"], produces=[MediaType.APPLICATION_JSON_VALUE])
+    fun getProductWarehouses(
+        @PathVariable productID: Long
+    ): ResponseEntity<Any>
+    {
+        return ResponseEntity.ok().body(productService.getProductWarehouses(productID))
+    }
+
+
+
+
+
+
+
+
 }
