@@ -29,11 +29,11 @@ class WarehouseMvcApplication
                 productRepository.save(Product(null,"${category}_$i",category, BigDecimal(Random.nextInt(1,1000)), Random.nextInt(1,100)))
             }
             */
-            val warehouse = warehouseRepository.save(Warehouse(null))
-            val product = productRepository.save(Product(null, "p1", "test", "url", "c1", BigDecimal("0.5"), BigDecimal("0.5"), Date()))
-            val comment = commentRepository.save(Comment(null, "t1", "c1", 4, Date(), product))
-            val key = ProductStoreKey(product.id, warehouse.id)
-            productStoreRepository.save(ProductStore(key, product, warehouse, 10))
+//            val warehouse = warehouseRepository.save(Warehouse(null))
+//            val product = productRepository.save(Product(null, "p1", "test", "url", "c1", BigDecimal("0.5"), BigDecimal("0.5"), Date()))
+//            val comment = commentRepository.save(Comment(null, "t1", "c1", 4, Date(), product))
+//            val key = ProductStoreKey(product.id, warehouse.id)
+//            productStoreRepository.save(ProductStore(key, product, warehouse, 10))
         }
     }
 }

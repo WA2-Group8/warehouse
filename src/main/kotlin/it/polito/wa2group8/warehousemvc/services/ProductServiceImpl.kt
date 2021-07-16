@@ -13,6 +13,7 @@ import org.mapstruct.factory.Mappers
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @Transactional
@@ -21,8 +22,8 @@ class ProductServiceImpl(
     val productStoreRepository: ProductStoreRepository
 ): ProductService
 {
-    override fun getProducts(category: String): Set<ProductDTO> {
-        return if(category == "")
+    override fun getProducts(category: String?): Set<ProductDTO> {
+        return if(category == null)
             productRepository.findAll().map{ it.toProductDTO() }.toSet()
         else
             productRepository.findByCategory(category).map{ it.toProductDTO() }.toSet()
@@ -36,7 +37,7 @@ class ProductServiceImpl(
     override fun createOrUpdateProduct(productID: Long?, productDTO: ProductDTO): ProductDTO?
     {
         // date created here? pictureURL nullable?
-        val product = Product(productID, productDTO.name!! , productDTO.description!!, productDTO.pictureURL!!, productDTO.category!!, productDTO.price!!, productDTO.averageRating!!, productDTO.creationDate!!)
+        val product = Product(productID, productDTO.name!! , productDTO.description!!, productDTO.pictureURL!!, productDTO.category!!, productDTO.price!!, productDTO.averageRating!!, Date())
         val createdProduct = productRepository.save(product)
         return createdProduct.toProductDTO()
     }

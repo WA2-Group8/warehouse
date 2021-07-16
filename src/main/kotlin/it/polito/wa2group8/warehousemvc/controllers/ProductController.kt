@@ -14,7 +14,7 @@ class ProductController(val productService: ProductService)
 {
     @GetMapping(value=["/products"], produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getProducts(
-        @RequestParam("category") category: String
+        @RequestParam("category", required = false) category: String?
     ): ResponseEntity<Any>
     {
         return ResponseEntity.ok().body(productService.getProducts(category))

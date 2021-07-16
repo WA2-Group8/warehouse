@@ -5,7 +5,7 @@ import it.polito.wa2group8.warehousemvc.dto.WarehouseDTO
 
 interface ProductService
 {
-    fun getProducts(category: String): Set<ProductDTO>
+    fun getProducts(category: String?): Set<ProductDTO>
     fun getProductById(id: Long): ProductDTO?
     fun createOrUpdateProduct(productID: Long?, productDTO: ProductDTO) : ProductDTO?
     fun updateProduct(productID: Long, productDTO: ProductDTO) : ProductDTO?

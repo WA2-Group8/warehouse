@@ -9,16 +9,16 @@ import javax.validation.constraints.NotEmpty
 data class ProductDTO (
     var id: Long?,
 
-    @get:NotEmpty(message="Empty name")
+//    @get:NotEmpty(message="Empty name")
     val name: String?,
 
-    @get:NotEmpty
+//    @get:NotEmpty
     var description: String?,
 
-    @get:NotEmpty
+//    @get:NotEmpty
     var pictureURL: String?,
 
-    @get:NotEmpty(message="Empty category")
+//    @get:NotEmpty(message="Empty category")
     val category: String?,
 
     @get:DecimalMin(value="0.0", message="Negative price", inclusive = true)
