@@ -22,14 +22,16 @@ class ProductServiceImpl(
     val productStoreRepository: ProductStoreRepository
 ): ProductService
 {
-    override fun getProducts(category: String?): Set<ProductDTO> {
+    override fun getProducts(category: String?): Set<ProductDTO>
+    {
         return if(category == null)
             productRepository.findAll().map{ it.toProductDTO() }.toSet()
         else
             productRepository.findByCategory(category).map{ it.toProductDTO() }.toSet()
     }
 
-    override fun getProductById(id: Long): ProductDTO? {
+    override fun getProductById(id: Long): ProductDTO?
+    {
         val product = productRepository.findByIdOrNull(id) ?: throw NotFoundException("Product not found")
         return product.toProductDTO()
     }
@@ -42,18 +44,30 @@ class ProductServiceImpl(
         return createdProduct.toProductDTO()
     }
 
+//    override fun updateProduct(productID: Long, productDTO: ProductDTO): ProductDTO?
+//    {
+//        val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
+//        val productMapper = Mappers.getMapper(ProductMapper::class.java)
+//        productMapper.updateProductFromDto(productDTO, product)
+//        val updatedProduct = productRepository.save(product)
+//        return updatedProduct.toProductDTO()
+//    }
+
     override fun updateProduct(productID: Long, productDTO: ProductDTO): ProductDTO?
     {
         val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
-        val productMapper = Mappers.getMapper(ProductMapper::class.java)
-        productMapper.updateProductFromDto(productDTO, product)
+        product.name = productDTO.name ?: product.name
+        product.description = productDTO.description ?: product.description
+        product.category = productDTO.category ?: product.category
+        product.averageRating = productDTO.averageRating ?: product.averageRating // needed?
+        product.price = productDTO.price ?: product.price
+        product.pictureURL = productDTO.pictureURL ?: product.pictureURL // needed?
         val updatedProduct = productRepository.save(product)
         return updatedProduct.toProductDTO()
     }
 
     override fun deleteProduct(id: Long)
     {
-        // return value?
         productRepository.findByIdOrNull(id) ?: throw NotFoundException("Product not found")
         productRepository.deleteById(id)
     }
@@ -66,10 +80,10 @@ class ProductServiceImpl(
         TODO("Not yet implemented")
     }
 
-    override fun getProductWarehouses(id: Long): Set<WarehouseDTO> {
+    override fun getProductWarehouses(id: Long): Set<WarehouseDTO>
+    {
         val product = productRepository.findByIdOrNull(id) ?: throw NotFoundException("Product not found")
         return productStoreRepository.getByProduct(product).map{ it.warehouse.toWarehouseDTO() }.toSet()
-
     }
 
 }
