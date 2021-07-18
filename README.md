@@ -11,8 +11,8 @@
 ### Final Project checklist
 * Create domains for Comment, Product, Warehouse and for Product-Warehouse relation -> OK
 * Create repositories -> OK
-* Create DT0s and function for domain-dto conversion 
-* Create services 
-* Create controllers
-* Handle JWT parsing
+* Create DT0s and function for domain-dto conversion -> OK
+* Create services -> OK
+* Create controllers -> OK
+* ~~Handle JWT parsing~~
 * Handle Order Saga

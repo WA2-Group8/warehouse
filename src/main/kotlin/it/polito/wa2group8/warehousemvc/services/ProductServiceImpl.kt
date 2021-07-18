@@ -39,7 +39,16 @@ class ProductServiceImpl(
     override fun createOrUpdateProduct(productID: Long?, productDTO: ProductDTO): ProductDTO?
     {
         // date created here? pictureURL nullable?
-        val product = Product(productID, productDTO.name!! , productDTO.description!!, productDTO.pictureURL!!, productDTO.category!!, productDTO.price!!, productDTO.averageRating!!, Date())
+        if(
+            productDTO.name == null ||
+            productDTO.description == null ||
+            productDTO.pictureURL == null ||
+            productDTO.category == null ||
+            productDTO.price == null ||
+            productDTO.averageRating == null
+        )
+            throw BadRequestException("Fields cannot be null")
+        val product = Product(productID, productDTO.name , productDTO.description!!, productDTO.pictureURL!!, productDTO.category, productDTO.price, productDTO.averageRating!!, Date())
         val createdProduct = productRepository.save(product)
         return createdProduct.toProductDTO()
     }
