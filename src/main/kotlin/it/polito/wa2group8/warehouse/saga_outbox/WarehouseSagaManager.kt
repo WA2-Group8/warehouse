@@ -7,11 +7,9 @@ import io.debezium.embedded.Connect
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.RecordChangeEvent
 import io.debezium.engine.format.ChangeEventFormat
-import it.polito.wa2group8.warehouse.domain.RESPONSE_TO_ORDER_CLN
-import it.polito.wa2group8.warehouse.domain.WAREHOUSE_SAGA_STATUS_CLN
-import it.polito.wa2group8.warehouse.domain.Warehouse
-import it.polito.wa2group8.warehouse.domain.WarehouseOutbox
+import it.polito.wa2group8.warehouse.domain.*
 import it.polito.wa2group8.warehouse.repositories.ProductRepository
+import it.polito.wa2group8.warehouse.repositories.ProductWarehouseRepository
 import it.polito.wa2group8.warehouse.repositories.WalletOutboxRepository
 import it.polito.wa2group8.warehouse.repositories.WarehouseRepository
 import it.polito.wa2group8.warehouse.saga_outbox.events.*
@@ -32,9 +30,10 @@ import javax.annotation.PreDestroy
 @Transactional
 @Component
 class WarehouseSagaManager(
-    private val warehouseRepository: WarehouseRepository,
-    private val warehouseOutboxRepository: WalletOutboxRepository
     private val productRepository: ProductRepository,
+    private val warehouseRepository: WarehouseRepository,
+    private val pwRepository: ProductWarehouseRepository,
+    private val warehouseOutboxRepository: WalletOutboxRepository,
     private val kafkaTemplate: KafkaTemplate<String, String>,
     warehouseConnectorConfiguration: Configuration
 )
@@ -60,7 +59,7 @@ class WarehouseSagaManager(
 
     fun rejectRequest(request: OrderEventRequest)
     {
-        walletOutboxRepository.save(WalletOutbox.createRejectedWalletOutbox(request))
+        warehouseOutboxRepository.save(WarehouseOutbox.createRejectedWarehouseOutboxOutbox(request))
         println("[WAREHOUSE] REJECTED ${request.orderId}")
     }
 
@@ -85,6 +84,46 @@ class WarehouseSagaManager(
     fun handleMessageFromKafka(request: OrderEventRequest)
     {
         val furtherProcessing = this.checkIfAdditionalProcessingIsRequired(request) ?: return
+
+        var bIsFirst: Boolean = true
+        var totPrice: Double = 0.0
+        var warehousesSet: HashSet<ProductWarehouse> = hashSetOf()
+        for (purchasedProduct in request.productsList)
+        {
+            val p = productRepository.findByProductIdAndPrice(purchasedProduct.productId, purchasedProduct.price.toBigDecimal())
+            if (p == null)
+            {
+                this.rejectRequest(request)
+                return
+            }
+            totPrice += purchasedProduct.price
+            val warehouses= pwRepository.findAllByProductIdAndQuantity(purchasedProduct.productId, purchasedProduct.quantity)
+            if (warehouses.isEmpty())
+            {
+                this.rejectRequest(request)
+                return
+            }
+
+            if (!bIsFirst)
+            {
+                warehousesSet.retainAll(warehouses)
+                if (warehousesSet.isEmpty())
+                {
+                    this.rejectRequest(request)
+                    return
+                }
+            }
+            else
+            {
+                warehousesSet = warehouses.toHashSet()
+                bIsFirst = false
+            }
+        }
+        if (totPrice != request.amount)
+        {
+            this.rejectRequest(request)
+            return
+        }
 
         //If here, request requires further processing
         val customer = customerRepository.findByUsername(request.username)
@@ -181,4 +220,6 @@ class WarehouseSagaManager(
         this.handleMessageFromKafka(request)
     }
 }
+
  */
+

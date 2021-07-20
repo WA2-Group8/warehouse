@@ -4,7 +4,7 @@ import it.polito.wa2group8.warehouse.dto.WarehouseDTO
 
 interface WarehouseService
 {
-    fun getWarehouses() : Set<WarehouseDTO>
+    fun getWarehouses() : List<WarehouseDTO>
     fun getWarehouseById(id: Long) : WarehouseDTO?
     fun createOrUpdateWarehouse(warehouseID: Long?, warehouseDTO: WarehouseDTO) : WarehouseDTO?
     fun updateWarehouse(warehouseID: Long, warehouseDTO: WarehouseDTO) : WarehouseDTO?

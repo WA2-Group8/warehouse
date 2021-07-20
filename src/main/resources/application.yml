@@ -16,8 +16,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
-    #hibernate:
-      #ddl-auto: create-drop
+    hibernate:
+      ddl-auto: create-drop
   kafka:
     bootstrap-servers:
       - localhost:9091

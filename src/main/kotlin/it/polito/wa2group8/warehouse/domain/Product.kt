@@ -6,24 +6,29 @@ import java.math.BigDecimal
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.DecimalMin
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
 @Entity
 class Product(
         @Id
         @GeneratedValue(strategy=GenerationType.AUTO)
-        var id: Long?,
+        @Column(name = "product_id")
+        var productId: Long?,
 
         @get:NotEmpty
+        @get:NotBlank
         var name: String,
 
         @get:NotEmpty
+        @get:NotBlank
         var description: String,
 
         @get:NotEmpty
         var pictureURL: String,
 
         @get:NotEmpty
+        @get:NotBlank
         var category: String,
 
         @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
@@ -33,15 +38,32 @@ class Product(
         var averageRating: BigDecimal,
 
         @get:DateTimeFormat
-        var creationDate: Date
+        var creationDate: Date,
 
 ){
+        @OneToMany(mappedBy = "product", targetEntity = ProductWarehouse::class, fetch = FetchType.LAZY)
+        var warehouses: MutableSet<ProductWarehouse> = mutableSetOf()
+
         @OneToMany(mappedBy = "product", targetEntity = Comment::class, fetch = FetchType.LAZY)
-        var comments: MutableList<Comment> = mutableListOf()
+        var comments: MutableSet<Comment> = mutableSetOf()
 
-        @OneToMany(mappedBy = "product", targetEntity = ProductStore::class, fetch = FetchType.LAZY)
-        var warehouses: MutableList<ProductStore> = mutableListOf()
+        /*
+        @ManyToMany(cascade = [CascadeType.ALL])
+        @JoinTable(
+                name = "product_warehouse",
+                joinColumns = [JoinColumn(name = "product_id", referencedColumnName = "id")],
+                inverseJoinColumns = [JoinColumn(name = "warehouse_id", referencedColumnName = "id")]
+        )
+        var warehouse: MutableSet<Warehouse> = mutableSetOf()
 
-        fun toProductDTO() = ProductDTO(id, name, description, pictureURL, category, price, averageRating, creationDate)
+         */
+
+        //@OneToMany(mappedBy = "product")
+        //val warehouses: MutableSet<WarehouseProduct> = mutableSetOf()
+
+        //@ManyToMany(targetEntity = Warehouse::class, fetch = FetchType.LAZY)
+        //@ManyToMany
+        //var warehouses: MutableSet<Warehouse> = mutableSetOf()
+
+        fun toProductDTO() = ProductDTO(productId, name, description, pictureURL, category, price, averageRating, creationDate)
 }
-

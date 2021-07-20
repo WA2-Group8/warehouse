@@ -5,5 +5,7 @@ data class WarehouseDTO (
 
     var name: String?,
 
-    var location: String?
+    var location: String?,
+
+    var productsIdsList: Set<Long>?,
 )

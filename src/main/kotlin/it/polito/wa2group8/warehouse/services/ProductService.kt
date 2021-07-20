@@ -12,5 +12,5 @@ interface ProductService
     fun deleteProduct(id: Long)
     fun getProductPicture(id: Long) : String
     fun addProductPicture(id: Long) : String
-    fun getProductWarehouses(id: Long) : Set<WarehouseDTO>
+    fun getProductWarehouses(id: Long) : List<WarehouseDTO>
 }

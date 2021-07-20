@@ -6,22 +6,23 @@ import it.polito.wa2group8.warehouse.dto.WarehouseDTO
 import it.polito.wa2group8.warehouse.exceptions.BadRequestException
 import it.polito.wa2group8.warehouse.exceptions.NotFoundException
 import it.polito.wa2group8.warehouse.repositories.ProductRepository
-import it.polito.wa2group8.warehouse.repositories.ProductStoreRepository
+import it.polito.wa2group8.warehouse.repositories.ProductWarehouseRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+
 @Service
 @Transactional
 class ProductServiceImpl(
-    val productRepository: ProductRepository,
-    val productStoreRepository: ProductStoreRepository
+    private val productRepository: ProductRepository,
+    private val productWarehouseRepository: ProductWarehouseRepository
 ): ProductService
 {
     override fun getProducts(category: String?): Set<ProductDTO>
     {
-        return if(category == null)
+        return if (category == null)
             productRepository.findAll().map{ it.toProductDTO() }.toSet()
         else
             productRepository.findByCategory(category).map{ it.toProductDTO() }.toSet()
@@ -36,7 +37,7 @@ class ProductServiceImpl(
     override fun createOrUpdateProduct(productID: Long?, productDTO: ProductDTO): ProductDTO?
     {
         // date created here? pictureURL nullable?
-        if(
+        if (
             productDTO.name == null ||
             productDTO.description == null ||
             productDTO.pictureURL == null ||
@@ -45,7 +46,10 @@ class ProductServiceImpl(
             productDTO.averageRating == null
         )
             throw BadRequestException("Fields cannot be null")
-        val product = Product(productID, productDTO.name , productDTO.description!!, productDTO.pictureURL!!, productDTO.category, productDTO.price, productDTO.averageRating!!, Date())
+        val product = Product(
+            productID, productDTO.name , productDTO.description!!, productDTO.pictureURL!!,
+            productDTO.category, productDTO.price, productDTO.averageRating!!, Date()
+        )
         val createdProduct = productRepository.save(product)
         return createdProduct.toProductDTO()
     }
@@ -86,10 +90,9 @@ class ProductServiceImpl(
         TODO("Not yet implemented")
     }
 
-    override fun getProductWarehouses(id: Long): Set<WarehouseDTO>
+    override fun getProductWarehouses(id: Long): List<WarehouseDTO>
     {
         val product = productRepository.findByIdOrNull(id) ?: throw NotFoundException("Product not found")
-        return productStoreRepository.getByProduct(product).map{ it.warehouse.toWarehouseDTO() }.toSet()
+        return productWarehouseRepository.findAllByProduct(product).map { it.warehouse.toWarehouseDTO() }
     }
-
 }

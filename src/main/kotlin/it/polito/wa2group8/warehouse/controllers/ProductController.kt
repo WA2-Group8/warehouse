@@ -91,11 +91,4 @@ class ProductController(val productService: ProductService)
         return ResponseEntity.ok().body(productService.getProductWarehouses(productID))
     }
 
-
-
-
-
-
-
-
 }

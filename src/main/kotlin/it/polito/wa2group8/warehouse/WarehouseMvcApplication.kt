@@ -8,14 +8,14 @@ import org.springframework.context.annotation.Bean
 
 //N.B: Not deleted because these imports are used if rows from 20 to 26 are uncommented
 import it.polito.wa2group8.warehouse.repositories.CommentRepository
-import it.polito.wa2group8.warehouse.repositories.ProductStoreRepository
+//import it.polito.wa2group8.warehouse.repositories.ProductStoreRepository
 import it.polito.wa2group8.warehouse.repositories.WarehouseRepository
 
 @SpringBootApplication
 class WarehouseMvcApplication
 {
     @Bean
-    fun test(productRepository: ProductRepository, warehouseRepository: WarehouseRepository, commentRepository: CommentRepository, productStoreRepository: ProductStoreRepository): CommandLineRunner {
+    fun test(productRepository: ProductRepository, warehouseRepository: WarehouseRepository, commentRepository: CommentRepository): CommandLineRunner {//, productStoreRepository: ProductStoreRepository): CommandLineRunner {
         return CommandLineRunner{
             /* UNCOMMENT TO ADD 10000 RANDOM ROWS TO THE TABLE "PRODUCT" */
             /*
