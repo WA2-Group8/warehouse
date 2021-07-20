@@ -1,12 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.4.5"
+    id("org.springframework.boot") version "2.5.2"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.4.32"
-    kotlin("plugin.spring") version "1.4.32"
-    kotlin("plugin.jpa") version "1.4.31"
-    kotlin("plugin.allopen") version "1.4.31"
+    kotlin("jvm") version "1.5.20"
+    kotlin("plugin.spring") version "1.5.20"
+    kotlin("plugin.jpa") version "1.5.20"
+    kotlin("plugin.allopen") version "1.5.20"
 }
 
 group = "it.polito.wa2group8"
@@ -25,17 +25,31 @@ allOpen{
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.h2database:h2")
-    implementation("org.hibernate.validator:hibernate-validator")
     implementation("javax.validation:validation-api")
+
+    //Database access
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.hibernate.validator:hibernate-validator")
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+
+    //Kafka
+    implementation("org.springframework.kafka", "spring-kafka")
+
+    //Debezium
+    implementation("io.debezium", "debezium-api", "1.6.0.Final")
+    implementation("io.debezium", "debezium-embedded", "1.6.0.Final") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+    }
+
     implementation("org.mapstruct:mapstruct:1.4.2.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.4.2.Final")
+
+    //Testing
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 }
 
 tasks.withType<KotlinCompile> {

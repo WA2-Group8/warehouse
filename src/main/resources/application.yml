@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/ecommerce
+    database-host: localhost
+    database-name: ecommerce
+    database-port: 3306
+    username: root
+    password: password
+    debezium-connector-name: warehouse_mysql_connector
+    debezium-cluster-name: warehouse_mysql_db_server
+    debezium-id: 10185
+    outbox-table: warehouse_outbox
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+    #hibernate:
+      #ddl-auto: create-drop
+  kafka:
+    bootstrap-servers:
+      - localhost:9091
+      - localhost:9092
+      - localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ecommerce
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  application:
+    name: warehouse
+  main:
+    web-application-type: servlet
+server:
+  port: 8082
+  error:
+    include-message: always
+#security:
+  #jwt:
+    #jwtSecret: 462D4A614E645267556B587032733575123456789AA
