@@ -13,4 +13,6 @@ interface ProductRepository : CrudRepository<Product, Long>
 //    fun updateQuantity(quantity: Int, productId: Long) : Int
 
     fun findByProductIdAndPrice(productId: Long, price: BigDecimal): Product?
+
+    fun findByCategory(category: String): Iterable<Product>
 }

@@ -28,26 +28,28 @@ class WarehouseOutbox(
     @Column(name = WAREHOUSE_SAGA_STATUS_CLN, nullable = false)
     @Enumerated(EnumType.STRING)
     var warehouseSagaStatus: OrderStatusEvent,
+
+    var warehouseId: Long?
 )
 {
     companion object
     {
-        fun createRejectedWarehouseOutboxOutbox(request: OrderEventRequest) : WarehouseOutbox
+        fun createRejectedWarehouseOutbox(request: OrderEventRequest) : WarehouseOutbox
         {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.REJECTED)
-            return WarehouseOutbox(null, response.orderId, response.toString(), response.status)
+            val response = OrderEventResponse(request.orderId, OrderStatusEvent.REJECTED, null)
+            return WarehouseOutbox(null, response.orderId, response.toString(), response.status, null)
         }
 
-        fun createAcceptedWarehouseOutboxOutbox(request: OrderEventRequest) : WarehouseOutbox
+        fun createAcceptedWarehouseOutbox(request: OrderEventRequest, warehouseId: Long) : WarehouseOutbox
         {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.ACCEPTED)
-            return WarehouseOutbox(null, response.orderId, response.toString(), response.status)
+            val response = OrderEventResponse(request.orderId, OrderStatusEvent.ACCEPTED, null)
+            return WarehouseOutbox(null, response.orderId, response.toString(), response.status, warehouseId)
         }
 
-        fun createCompensatedWarehouseOutboxOutbox(request: OrderEventRequest) : WarehouseOutbox
+        fun createCompensatedWarehouseOutbox(request: OrderEventRequest, warehouseId: Long) : WarehouseOutbox
         {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.COMPENSATED)
-            return WarehouseOutbox(null, response.orderId, response.toString(), response.status)
+            val response = OrderEventResponse(request.orderId, OrderStatusEvent.COMPENSATED, warehouseId)
+            return WarehouseOutbox(null, response.orderId, response.toString(), response.status, warehouseId)
         }
     }
 }

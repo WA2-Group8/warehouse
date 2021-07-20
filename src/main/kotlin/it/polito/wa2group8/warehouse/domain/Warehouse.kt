@@ -7,22 +7,22 @@ import javax.validation.constraints.NotEmpty
 
 @Entity
 class Warehouse (
-        @Id
-        @GeneratedValue(strategy= GenerationType.AUTO)
-        @Column(name = "warehouse_id")
-        var warehouseId: Long?,
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    @Column(name = "warehouse_id")
+    var warehouseId: Long?,
 
-        @get:NotEmpty
-        @get:NotBlank
-        var name: String,
+    @get:NotEmpty
+    @get:NotBlank
+    var name: String,
 
-        @get:NotEmpty
-        @get:NotBlank
-        var location: String,
+    @get:NotEmpty
+    @get:NotBlank
+    var location: String,
 )
 {
-        @OneToMany(mappedBy = "warehouse", targetEntity = ProductWarehouse::class, fetch = FetchType.LAZY)
-        var products: MutableSet<ProductWarehouse> = mutableSetOf()
+    @OneToMany(mappedBy = "warehouse", targetEntity = ProductWarehouse::class, fetch = FetchType.LAZY)
+    var products: MutableSet<ProductWarehouse> = mutableSetOf()
 
-        fun toWarehouseDTO() = WarehouseDTO(warehouseId, name, location, null)
+    fun toWarehouseDTO() = WarehouseDTO(warehouseId, name, location, null)
 }

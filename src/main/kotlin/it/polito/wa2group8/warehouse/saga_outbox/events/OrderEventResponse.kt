@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
  */
 data class OrderEventResponse(
     @JsonProperty("orderId") val orderId: Long,
-    @JsonProperty("status") val status: OrderStatusEvent
+    @JsonProperty("status") val status: OrderStatusEvent,
+    @JsonProperty("warehouseId") val warehouseId: Long?,
 )
 {
     private val objectMapper = ObjectMapper()

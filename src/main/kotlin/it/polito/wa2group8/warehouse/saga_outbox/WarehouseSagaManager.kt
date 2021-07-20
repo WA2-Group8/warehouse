@@ -1,6 +1,5 @@
 package it.polito.wa2group8.warehouse.saga_outbox
 
-/*
 import io.debezium.config.Configuration
 import io.debezium.data.Envelope
 import io.debezium.embedded.Connect
@@ -10,11 +9,12 @@ import io.debezium.engine.format.ChangeEventFormat
 import it.polito.wa2group8.warehouse.domain.*
 import it.polito.wa2group8.warehouse.repositories.ProductRepository
 import it.polito.wa2group8.warehouse.repositories.ProductWarehouseRepository
-import it.polito.wa2group8.warehouse.repositories.WalletOutboxRepository
+import it.polito.wa2group8.warehouse.repositories.WarehouseOutboxRepository
 import it.polito.wa2group8.warehouse.repositories.WarehouseRepository
 import it.polito.wa2group8.warehouse.saga_outbox.events.*
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.source.SourceRecord
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
@@ -33,7 +33,7 @@ class WarehouseSagaManager(
     private val productRepository: ProductRepository,
     private val warehouseRepository: WarehouseRepository,
     private val pwRepository: ProductWarehouseRepository,
-    private val warehouseOutboxRepository: WalletOutboxRepository,
+    private val warehouseOutboxRepository: WarehouseOutboxRepository,
     private val kafkaTemplate: KafkaTemplate<String, String>,
     warehouseConnectorConfiguration: Configuration
 )
@@ -57,97 +57,101 @@ class WarehouseSagaManager(
 
     /* --------------------------- SAGA MANAGER --------------------------- */
 
-    fun rejectRequest(request: OrderEventRequest)
+    private fun rejectRequest(request: OrderEventRequest)
     {
-        warehouseOutboxRepository.save(WarehouseOutbox.createRejectedWarehouseOutboxOutbox(request))
+        warehouseOutboxRepository.save(WarehouseOutbox.createRejectedWarehouseOutbox(request))
         println("[WAREHOUSE] REJECTED ${request.orderId}")
     }
 
-    fun acceptRequest(request: OrderEventRequest, wallet: Wallet)
+    private fun acceptRequest(request: OrderEventRequest, warehouseId: Long)
     {
-        wallet.currentAmount -= request.amount.toBigDecimal()
-        //walletRepository.updateAmount(wallet.currentAmount, wallet.getId()!!)
-        walletRepository.save(wallet)
-        walletOutboxRepository.save(WalletOutbox.createAcceptedWalletOutbox(request))
-        println("[WAREHOUSE] ACCEPTED ${request.orderId}")
+        //For each product, reduce the quantity
+        request.productsList.forEach {
+            pwRepository.reduceQuantity(it.quantity, warehouseId, it.productId)
+            //TODO - controllare livello quantità e inviare eventualmente email
+        }
+        warehouseOutboxRepository.save(WarehouseOutbox.createAcceptedWarehouseOutbox(request, warehouseId))
+        println("[WAREHOUSE] ACCEPTED ${request.orderId} at warehouse $warehouseId")
     }
 
-    fun compensateRequest(request: OrderEventRequest, wallet: Wallet)
+    private fun compensateRequest(request: OrderEventRequest)
     {
-        wallet.currentAmount += request.amount.toBigDecimal()
-        //walletRepository.updateAmount(wallet.currentAmount, wallet.getId()!!)
-        walletRepository.save(wallet)
-        walletOutboxRepository.save(WalletOutbox.createCompensatedWalletOutbox(request))
-        println("[WAREHOUSE] COMPENSATED ${request.orderId}")
+        val orderRequest = warehouseOutboxRepository.findByOrderId(request.orderId) ?: throw RuntimeException("Logic error")
+        val warehouseId = orderRequest.warehouseId ?: throw RuntimeException("Logic error")
+        //For each product, retun it to the warehouse
+        request.productsList.forEach { pwRepository.incrementQuantity(it.quantity, warehouseId, it.productId) }
+
+        warehouseOutboxRepository.save(WarehouseOutbox.createCompensatedWarehouseOutbox(request, warehouseId))
+        println("[WAREHOUSE] COMPENSATED ${request.orderId} at warehouse $warehouseId")
     }
 
-    fun handleMessageFromKafka(request: OrderEventRequest)
+    private fun tryToFoundWarehouse(request: OrderEventRequest): Long?
     {
-        val furtherProcessing = this.checkIfAdditionalProcessingIsRequired(request) ?: return
-
-        var bIsFirst: Boolean = true
-        var totPrice: Double = 0.0
-        var warehousesSet: HashSet<ProductWarehouse> = hashSetOf()
+        var bIsFirst = true
+        var totPrice = 0.0
+        var warehousesSet: HashSet<Long> = hashSetOf()
         for (purchasedProduct in request.productsList)
         {
-            val p = productRepository.findByProductIdAndPrice(purchasedProduct.productId, purchasedProduct.price.toBigDecimal())
-            if (p == null)
-            {
-                this.rejectRequest(request)
-                return
-            }
-            totPrice += purchasedProduct.price
-            val warehouses= pwRepository.findAllByProductIdAndQuantity(purchasedProduct.productId, purchasedProduct.quantity)
-            if (warehouses.isEmpty())
-            {
-                this.rejectRequest(request)
-                return
-            }
+            //Check for errors in the request received from Order (since Order simply forwarded it)
+            if (totPrice > request.amount)
+                return null //Reject request
+            if (purchasedProduct.quantity <= 0)
+                return null //Reject request
+            val productId = purchasedProduct.productId
+            val price = purchasedProduct.price
+            productRepository.findByProductIdAndPrice(productId, price.toBigDecimal()) ?: return null //Reject request
+
+            //Compute total price even server side
+            totPrice += price
+
+            //Get all warehouses that can deploy the current product
+            val warehouses = pwRepository.findAllByProductIdAndQuantity(productId, purchasedProduct.quantity)
+                .map{ it.warehouse.warehouseId!! }
+            if (warehouses.isEmpty()) //Check if there is at least a warehouse that can deploy the current product
+                return null //Reject request
 
             if (!bIsFirst)
             {
+                //Compute the intersection between the current warehouses set and the previous one
                 warehousesSet.retainAll(warehouses)
-                if (warehousesSet.isEmpty())
-                {
-                    this.rejectRequest(request)
-                    return
-                }
+                if (warehousesSet.isEmpty()) //Check if there is at least a warehouse that can deploy all products examined so far
+                    return null //Reject request
             }
             else
             {
+                //If here, this is the first iteration of the for loop
                 warehousesSet = warehouses.toHashSet()
-                bIsFirst = false
+                bIsFirst = false //The next iteration will be the second :)
             }
         }
+        //Again, check for error in the request received from Order (since Order simply forwarded it)
         if (totPrice != request.amount)
-        {
-            this.rejectRequest(request)
-            return
-        }
+            return null //Reject request
 
-        //If here, request requires further processing
-        val customer = customerRepository.findByUsername(request.username)
-        if (customer == null) //Customer doesn't have any wallet
+        return warehousesSet.first()
+    }
+
+    private fun handleMessageFromKafka(request: OrderEventRequest)
+    {
+        val furtherProcessing = this.checkIfAdditionalProcessingIsRequired(request) ?: return
+
+        if (furtherProcessing == OrderStatusEvent.STARTED)
         {
-            if (request.status == OrderStatusEvent.COMPENSATING)
-                throw RuntimeException("Logic error in wallet detected in handleMessageFromKafka")
-            this.rejectRequest(request)
-            return
+            val warehouseId = this.tryToFoundWarehouse(request)
+            if (warehouseId == null)
+                this.rejectRequest(request)
+            else
+                this.acceptRequest(request, warehouseId)
         }
-        val wallet = walletRepository.findFirstByCustomerAndCurrentAmountGreaterThanEqual(customer, request.amount.toBigDecimal())
-        when
-        {
-            wallet == null -> rejectRequest(request)
-            furtherProcessing == OrderStatusEvent.STARTED -> this.acceptRequest(request, wallet)
-            else -> this.compensateRequest(request, wallet)
-        }
+        else //i.e. furtherProcessing == OrderStatusEvent.COMPENSATING
+            this.compensateRequest(request)
     }
 
     /* --------------------------- DEBEZIUM LISTENER AND OUTBOX PATTERN --------------------------- */
 
     private fun checkIfAdditionalProcessingIsRequired(request: OrderEventRequest): OrderStatusEvent?
     {
-        val outboxEntry = walletOutboxRepository.findByOrderId(request.orderId)
+        val outboxEntry = warehouseOutboxRepository.findByOrderId(request.orderId)
         if (outboxEntry != null)
         {
             //If here, wallet has already processed the request...
@@ -158,14 +162,14 @@ class WarehouseSagaManager(
                 this.produceMessage(TO_ORDER_TOPIC, outboxEntry.toOrderMsg)
                 return null
             }
-            if (request.status == OrderStatusEvent.REJECTED && outboxEntry.walletSagaStatus == OrderStatusEvent.REJECTED)
+            if (request.status == OrderStatusEvent.REJECTED && outboxEntry.warehouseSagaStatus == OrderStatusEvent.REJECTED)
             {
                 //If here, request is asking me to reject order processing...
                 //However, if here, wallet has already processed the request so simply resend computed response
                 this.produceMessage(TO_ORDER_TOPIC, outboxEntry.toOrderMsg)
                 return null
             }
-            if (request.status == OrderStatusEvent.COMPENSATING && outboxEntry.walletSagaStatus == OrderStatusEvent.COMPENSATED)
+            if (request.status == OrderStatusEvent.COMPENSATING && outboxEntry.warehouseSagaStatus == OrderStatusEvent.COMPENSATED)
             {
                 //If here, request is asking me to compensate previous order processing...
                 //However, if here, wallet has already compensated the request so simply resend computed response
@@ -220,6 +224,3 @@ class WarehouseSagaManager(
         this.handleMessageFromKafka(request)
     }
 }
-
- */
-

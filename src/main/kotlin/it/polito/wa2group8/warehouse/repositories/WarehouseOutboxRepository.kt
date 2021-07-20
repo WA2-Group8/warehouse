@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface WalletOutboxRepository : CrudRepository<WarehouseOutbox, Long>
+interface WarehouseOutboxRepository : CrudRepository<WarehouseOutbox, Long>
 {
     fun findByOrderId(orderId: Long): WarehouseOutbox?
 }
