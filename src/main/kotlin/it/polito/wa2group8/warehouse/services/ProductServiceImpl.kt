@@ -42,13 +42,12 @@ class ProductServiceImpl(
             productDTO.description == null ||
             productDTO.pictureURL == null ||
             productDTO.category == null ||
-            productDTO.price == null ||
-            productDTO.averageRating == null
+            productDTO.price == null
         )
             throw BadRequestException("Fields cannot be null")
         val product = Product(
-            productID, productDTO.name , productDTO.description!!, productDTO.pictureURL!!,
-            productDTO.category, productDTO.price, productDTO.averageRating!!, Date()
+            productID, productDTO.name , productDTO.description!!,
+            productDTO.pictureURL!!, productDTO.category, productDTO.price
         )
         val createdProduct = productRepository.save(product)
         return createdProduct.toProductDTO()

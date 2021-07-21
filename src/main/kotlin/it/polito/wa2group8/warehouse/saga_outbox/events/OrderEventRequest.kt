@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 
 data class PurchasedProductDTO (
-    val productId: Long,
-    val name: String,
-    val quantity: Int,
-    val price: Double,
+    @JsonProperty("productId") val productId: Long,
+    @JsonProperty("name") val name: String,
+    @JsonProperty("quantity") val quantity: Int,
+    @JsonProperty("price") val price: Double,
 )
 
 /**

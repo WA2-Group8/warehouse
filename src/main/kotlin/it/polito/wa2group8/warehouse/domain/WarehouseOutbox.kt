@@ -36,20 +36,21 @@ class WarehouseOutbox(
     {
         fun createRejectedWarehouseOutbox(request: OrderEventRequest) : WarehouseOutbox
         {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.REJECTED, null)
+            val response = OrderEventResponse(request.orderId, OrderStatusEvent.REJECTED, -1)
             return WarehouseOutbox(null, response.orderId, response.toString(), response.status, null)
         }
 
         fun createAcceptedWarehouseOutbox(request: OrderEventRequest, warehouseId: Long) : WarehouseOutbox
         {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.ACCEPTED, null)
+            val response = OrderEventResponse(request.orderId, OrderStatusEvent.ACCEPTED, warehouseId)
             return WarehouseOutbox(null, response.orderId, response.toString(), response.status, warehouseId)
         }
+    }
 
-        fun createCompensatedWarehouseOutbox(request: OrderEventRequest, warehouseId: Long) : WarehouseOutbox
-        {
-            val response = OrderEventResponse(request.orderId, OrderStatusEvent.COMPENSATED, warehouseId)
-            return WarehouseOutbox(null, response.orderId, response.toString(), response.status, warehouseId)
-        }
+    fun compensate(request: OrderEventRequest)
+    {
+        val response = OrderEventResponse(request.orderId, OrderStatusEvent.COMPENSATED, this.warehouseId ?: -1)
+        this.toOrderMsg = response.toString()
+        this.warehouseSagaStatus = response.status
     }
 }

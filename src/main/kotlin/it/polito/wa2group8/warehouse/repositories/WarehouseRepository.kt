@@ -1,12 +1,21 @@
 package it.polito.wa2group8.warehouse.repositories
 
-//import it.polito.wa2group8.warehouse.domain.ProductStore
 import it.polito.wa2group8.warehouse.domain.Warehouse
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
+import java.util.*
+import javax.persistence.LockModeType
 
 @Repository
 interface WarehouseRepository : CrudRepository<Warehouse, Long>
 {
-    //fun findAllByProductsContaining(products: MutableSet<ProductStore>): Iterable<Warehouse>
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    override fun findById(id: Long): Optional<Warehouse>
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    override fun findAll(): MutableIterable<Warehouse>
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    override fun <S : Warehouse?> save(entity: S): S
 }

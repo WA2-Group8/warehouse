@@ -10,11 +10,9 @@ import it.polito.wa2group8.warehouse.domain.*
 import it.polito.wa2group8.warehouse.repositories.ProductRepository
 import it.polito.wa2group8.warehouse.repositories.ProductWarehouseRepository
 import it.polito.wa2group8.warehouse.repositories.WarehouseOutboxRepository
-import it.polito.wa2group8.warehouse.repositories.WarehouseRepository
 import it.polito.wa2group8.warehouse.saga_outbox.events.*
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.source.SourceRecord
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
@@ -31,7 +29,6 @@ import javax.annotation.PreDestroy
 @Component
 class WarehouseSagaManager(
     private val productRepository: ProductRepository,
-    private val warehouseRepository: WarehouseRepository,
     private val pwRepository: ProductWarehouseRepository,
     private val warehouseOutboxRepository: WarehouseOutboxRepository,
     private val kafkaTemplate: KafkaTemplate<String, String>,
@@ -76,12 +73,13 @@ class WarehouseSagaManager(
 
     private fun compensateRequest(request: OrderEventRequest)
     {
-        val orderRequest = warehouseOutboxRepository.findByOrderId(request.orderId) ?: throw RuntimeException("Logic error")
+        val orderRequest = warehouseOutboxRepository.findByOrderId(request.orderId) ?: return
         val warehouseId = orderRequest.warehouseId ?: throw RuntimeException("Logic error")
-        //For each product, retun it to the warehouse
+        //For each product, return it to the warehouse
         request.productsList.forEach { pwRepository.incrementQuantity(it.quantity, warehouseId, it.productId) }
-
-        warehouseOutboxRepository.save(WarehouseOutbox.createCompensatedWarehouseOutbox(request, warehouseId))
+        //Update outbox table
+        orderRequest.compensate(request)
+        warehouseOutboxRepository.save(orderRequest)
         println("[WAREHOUSE] COMPENSATED ${request.orderId} at warehouse $warehouseId")
     }
 
@@ -93,19 +91,20 @@ class WarehouseSagaManager(
         for (purchasedProduct in request.productsList)
         {
             //Check for errors in the request received from Order (since Order simply forwarded it)
-            if (totPrice > request.amount)
-                return null //Reject request
             if (purchasedProduct.quantity <= 0)
                 return null //Reject request
             val productId = purchasedProduct.productId
             val price = purchasedProduct.price
-            productRepository.findByProductIdAndPrice(productId, price.toBigDecimal()) ?: return null //Reject request
-
-            //Compute total price even server side
-            totPrice += price
+            val product = productRepository.findByProductIdAndPrice(productId, price.toBigDecimal()) ?: return null //Reject request
+            if (product.name != purchasedProduct.name)
+                return null //Reject request
+            //Compute total price even server side and check for an error in the received total price
+            totPrice += price * purchasedProduct.quantity
+            if (totPrice > request.amount)
+                return null //Reject request
 
             //Get all warehouses that can deploy the current product
-            val warehouses = pwRepository.findAllByProductIdAndQuantity(productId, purchasedProduct.quantity)
+            val warehouses = pwRepository.findAllByProductIdAndQuantityGreaterThanEqual(productId, purchasedProduct.quantity)
                 .map{ it.warehouse.warehouseId!! }
             if (warehouses.isEmpty()) //Check if there is at least a warehouse that can deploy the current product
                 return null //Reject request
@@ -154,18 +153,18 @@ class WarehouseSagaManager(
         val outboxEntry = warehouseOutboxRepository.findByOrderId(request.orderId)
         if (outboxEntry != null)
         {
-            //If here, wallet has already processed the request...
-            if (request.status == OrderStatusEvent.STARTED)
+            //If here, warehouse has already processed the request...
+            if (outboxEntry.warehouseSagaStatus == OrderStatusEvent.REJECTED)
             {
-                //If here, request is asking me to start order processing...
-                //However, if here, wallet has already processed the request so simply resend computed response
+                //If here, warehouse has already rejected the request.
+                //So simply resend computed response
                 this.produceMessage(TO_ORDER_TOPIC, outboxEntry.toOrderMsg)
                 return null
             }
-            if (request.status == OrderStatusEvent.REJECTED && outboxEntry.warehouseSagaStatus == OrderStatusEvent.REJECTED)
+            if (request.status == OrderStatusEvent.STARTED)
             {
-                //If here, request is asking me to reject order processing...
-                //However, if here, wallet has already processed the request so simply resend computed response
+                //If here, request is asking me to start order processing...
+                //However, if here, warehouse has already processed the request so simply resend computed response
                 this.produceMessage(TO_ORDER_TOPIC, outboxEntry.toOrderMsg)
                 return null
             }

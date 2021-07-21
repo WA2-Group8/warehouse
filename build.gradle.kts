@@ -43,6 +43,7 @@ dependencies {
     implementation("io.debezium", "debezium-embedded", "1.6.0.Final") {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
     }
+    implementation("io.debezium", "debezium-connector-mysql", "1.6.0.Final")
 
     implementation("org.mapstruct:mapstruct:1.4.2.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.4.2.Final")

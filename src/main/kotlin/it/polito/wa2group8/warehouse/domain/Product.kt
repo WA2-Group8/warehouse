@@ -33,14 +33,14 @@ class Product(
 
     @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
     var price: BigDecimal,
-
+    )
+{
     @get:DecimalMin(value="0.0", message="The value must be a positive or zero value", inclusive=true)
-    var averageRating: BigDecimal,
+    var averageRating: BigDecimal = BigDecimal("0.0")
 
     @get:DateTimeFormat
-    var creationDate: Date,
+    var creationDate: Date = Date()
 
-    ){
     @OneToMany(mappedBy = "product", targetEntity = ProductWarehouse::class, fetch = FetchType.LAZY)
     var warehouses: MutableSet<ProductWarehouse> = mutableSetOf()
 

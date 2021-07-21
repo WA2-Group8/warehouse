@@ -12,15 +12,12 @@ class ProductWarehouse (
     var id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", referencedColumnName = "product_id")
+    @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     val product: Product,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", referencedColumnName = "warehouse_id")
     val warehouse: Warehouse,
-
-    @get:DecimalMin(value = "0.0", message = "The product price must be a positive or zero value", inclusive = true)
-    var productPrice: BigDecimal,
 
     @get:Min(value = 0, message = "Quantity cannot be negative")
     var quantity: Int = 0,
