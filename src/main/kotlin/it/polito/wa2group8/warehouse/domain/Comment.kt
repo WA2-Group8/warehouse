@@ -1,22 +1,25 @@
 package it.polito.wa2group8.warehouse.domain
 
 import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
+import java.util.Date
 import javax.persistence.*
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
 @Entity
 class Comment (
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    var id: Long?,
+    var commentId: Long?,
 
     @get:NotEmpty
+    @get:NotBlank
     var title: String,
 
     @get:NotEmpty
+    @get:NotBlank
     var body: String,
 
     @get:Min(value=0, message = "Stars cannot be negative")

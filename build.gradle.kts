@@ -45,9 +45,6 @@ dependencies {
     }
     implementation("io.debezium", "debezium-connector-mysql", "1.6.0.Final")
 
-    implementation("org.mapstruct:mapstruct:1.4.2.Final")
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.4.2.Final")
-
     //Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")

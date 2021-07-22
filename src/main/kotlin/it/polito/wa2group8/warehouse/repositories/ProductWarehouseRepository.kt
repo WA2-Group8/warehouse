@@ -24,6 +24,10 @@ interface ProductWarehouseRepository : CrudRepository<ProductWarehouse, Long>
     fun findAllByProduct(product: Product): Iterable<ProductWarehouse>
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT pw FROM ProductWarehouse pw WHERE pw.warehouse.warehouseId = ?1 AND pw.product.productId = ?2")
+    fun findByWarehouseIdAndProductId(warehouseId: Long,productId: Long): ProductWarehouse?
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT pw FROM ProductWarehouse pw WHERE pw.product.productId = ?1 AND pw.quantity >= ?2")
     fun findAllByProductIdAndQuantityGreaterThanEqual(productId: Long, quantity: Int): Iterable<ProductWarehouse>
 
@@ -34,4 +38,12 @@ interface ProductWarehouseRepository : CrudRepository<ProductWarehouse, Long>
     @Modifying
     @Query("UPDATE ProductWarehouse pw SET pw.quantity = pw.quantity + ?1 WHERE pw.warehouse.warehouseId = ?2 AND pw.product.productId = ?3")
     fun incrementQuantity(quantity: Int, warehouseId: Long, productId: Long) : Int
+
+    @Modifying
+    @Query("DELETE FROM ProductWarehouse pw WHERE pw.warehouse.warehouseId = ?1")
+    fun deleteAllByWarehouseId(warehouseId: Long)
+
+    @Modifying
+    @Query("DELETE FROM ProductWarehouse pw WHERE pw.product.productId = ?1")
+    fun deleteAllByProductId(productId: Long)
 }

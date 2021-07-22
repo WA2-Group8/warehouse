@@ -24,5 +24,5 @@ class Warehouse (
     @OneToMany(mappedBy = "warehouse", targetEntity = ProductWarehouse::class, fetch = FetchType.LAZY)
     var products: MutableSet<ProductWarehouse> = mutableSetOf()
 
-    fun toWarehouseDTO() = WarehouseDTO(warehouseId, name, location, null)
+    fun toWarehouseDTO() = WarehouseDTO(warehouseId, name, location)
 }
