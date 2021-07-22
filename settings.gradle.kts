@@ -1,1 +1,1 @@
-rootProject.name = "WarehouseMVC"
+rootProject.name = "Warehouse_service"
