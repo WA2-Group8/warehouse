@@ -3,15 +3,17 @@ package it.polito.wa2group8.warehouse.controllers
 import it.polito.wa2group8.warehouse.dto.CommentDTO
 import it.polito.wa2group8.warehouse.dto.ProductDTO
 import it.polito.wa2group8.warehouse.services.ProductService
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import javax.validation.Valid
 
 @RestController
-class ProductController(val productService: ProductService)
+class ProductController(private val productService: ProductService)
 {
     @GetMapping(value = ["/products"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getProducts(@RequestParam("category", required = false) category: String?): ResponseEntity<Any>
@@ -22,7 +24,7 @@ class ProductController(val productService: ProductService)
     @GetMapping(value = ["/products/{productID}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getProductByID(@PathVariable productID: Long): ResponseEntity<Any>
     {
-        return ResponseEntity.ok().body(productService.getProductById(productID))
+        return ResponseEntity.ok().body(productService.getProduct(productID))
     }
 
     @PostMapping(value = ["/products"], produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -54,21 +56,6 @@ class ProductController(val productService: ProductService)
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping(value = ["/products/{productID}/picture"], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun getProductPicture(@PathVariable productID: Long): ResponseEntity<Any>
-    {
-        TODO("Not yet implemented")
-    }
-
-    @PostMapping(value = ["/products/{productID}/picture"])
-    @ResponseBody
-    fun addProductPicture(@PathVariable productID: Long,
-//        @RequestBody @Valid product: ProductDTO,
-    ): ResponseEntity<Any>
-    {
-        TODO("Not yet implemented")
-    }
-
     @GetMapping(value = ["/products/{productID}/warehouses"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getProductWarehouses(@PathVariable productID: Long): ResponseEntity<Any>
     {
@@ -82,9 +69,26 @@ class ProductController(val productService: ProductService)
         bindingResult: BindingResult
     ): ResponseEntity<Any>
     {
-        println("qui")
         if (bindingResult.hasErrors()) return ResponseEntity.badRequest().body(bindingResult.fieldErrors)
         productService.addComment(productID, commentDTO)
         return ResponseEntity.status(HttpStatus.CREATED).body("")
+    }
+
+    @PostMapping(value = ["/products/{productID}/pictures"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @ResponseBody
+    fun addProductPicture(@PathVariable productID: Long, @RequestParam("image") image: MultipartFile): ResponseEntity<Any>
+    {
+        productService.setProductPicture(productID, image)
+        return ResponseEntity.status(HttpStatus.CREATED).body("")
+    }
+
+    @GetMapping(value = ["/products/{productID}/pictures"], produces = [MediaType.IMAGE_JPEG_VALUE])
+    fun getProductPicture(@PathVariable productID: Long): ResponseEntity<Any>
+    {
+        val pictureInfo = productService.getPictureAndPictureURL(productID)
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${pictureInfo.second}\"")
+            .body(pictureInfo.first)
     }
 }

@@ -17,17 +17,11 @@ class Product(
     @Column(name = "product_id")
     var productId: Long?,
 
-    @get:NotEmpty
-    @get:NotBlank
-    var name: String,
+    name: String,
 
     @get:NotEmpty
     @get:NotBlank
     var description: String,
-
-    @get:NotEmpty
-    @get:NotBlank
-    var pictureURL: String,
 
     @get:NotEmpty
     @get:NotBlank
@@ -37,6 +31,18 @@ class Product(
     var price: BigDecimal,
 )
 {
+    var name: String = name
+        set(value)
+        {
+            field = value
+            pictureURL = "picture_$value"
+        }
+
+    var pictureURL: String = "picture_$name"
+
+    @Lob //Lob indicates that this column stores a BLOB (Binary Large Object)
+    var picture: ByteArray? = null
+
     @get:DecimalMin(value = "0.0", message = "The value must be a positive or zero value", inclusive = true)
     var averageRating: BigDecimal = BigDecimal("0.0")
 
@@ -52,7 +58,7 @@ class Product(
     @get:Min(value = 0, message = "Comments number cannot be lower than 0")
     var commentsNumber: Int = 0
 
-    fun toProductDTO() = ProductDTO(productId, name, description, pictureURL, category, price, averageRating, creationDate)
+    fun toProductDTO() = ProductDTO(productId, name, description, category, price, averageRating, creationDate)
 
     fun updateAverageRating(newStars: Int)
     {

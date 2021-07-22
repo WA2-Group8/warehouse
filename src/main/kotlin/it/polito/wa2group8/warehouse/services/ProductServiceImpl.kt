@@ -1,6 +1,5 @@
 package it.polito.wa2group8.warehouse.services
 
-import it.polito.wa2group8.warehouse.domain.Comment
 import it.polito.wa2group8.warehouse.domain.Product
 import it.polito.wa2group8.warehouse.dto.CommentDTO
 import it.polito.wa2group8.warehouse.dto.ProductDTO
@@ -14,6 +13,7 @@ import it.polito.wa2group8.warehouse.repositories.ProductWarehouseRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Transactional
@@ -31,7 +31,7 @@ class ProductServiceImpl(
             productRepository.findByCategory(category).map{ it.toProductDTO() }
     }
 
-    override fun getProductById(productID: Long): ProductDTO?
+    override fun getProduct(productID: Long): ProductDTO?
     {
         val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
         return product.toProductDTO()
@@ -40,13 +40,7 @@ class ProductServiceImpl(
     override fun createOrUpdateProduct(productID: Long?, productDTO: ProductDTO): ProductDTO?
     {
         //pictureURL nullable?
-        if (
-            productDTO.name == null ||
-            productDTO.description == null ||
-            productDTO.pictureURL == null ||
-            productDTO.category == null ||
-            productDTO.price == null
-        )
+        if (productDTO.name == null || productDTO.description == null || productDTO.category == null || productDTO.price == null)
             throw BadRequestException("Fields cannot be null")
 
         return try
@@ -56,10 +50,7 @@ class ProductServiceImpl(
         }
         catch (e: NotFoundException)
         {
-            val product = Product(
-                null, productDTO.name , productDTO.description,
-                productDTO.pictureURL, productDTO.category, productDTO.price
-            )
+            val product = Product(null, productDTO.name , productDTO.description, productDTO.category, productDTO.price)
             val createdProduct = productRepository.save(product)
             createdProduct.toProductDTO()
         }
@@ -71,9 +62,7 @@ class ProductServiceImpl(
         product.name = productDTO.name ?: product.name
         product.description = productDTO.description ?: product.description
         product.category = productDTO.category ?: product.category
-        //product.averageRating = productDTO.averageRating ?: product.averageRating // needed?
         product.price = productDTO.price ?: product.price
-        product.pictureURL = productDTO.pictureURL ?: product.pictureURL // needed?
         val updatedProduct = productRepository.save(product)
         return updatedProduct.toProductDTO()
     }
@@ -87,16 +76,6 @@ class ProductServiceImpl(
         productWarehouseRepository.deleteAllByProductId(productID)
         //LASTLY (in order to don't violate UKs constraints), delete product
         productRepository.deleteById(productID)
-    }
-
-    override fun getProductPicture(productID: Long): String
-    {
-        TODO("Not yet implemented")
-    }
-
-    override fun addProductPicture(productID: Long): String
-    {
-        TODO("Not yet implemented")
     }
 
     override fun getProductWarehouses(productID: Long): List<WarehouseDTO>
@@ -114,5 +93,25 @@ class ProductServiceImpl(
         //Add a comment
         val newComment = commentDTO.toCommentEntity(product)
         commentRepository.save(newComment)
+    }
+
+    override fun setProductPicture(productID: Long, file: MultipartFile)
+    {
+        val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
+        product.picture = file.bytes
+        productRepository.save(product)
+    }
+
+    override fun getProductPicture(productID: Long): ByteArray
+    {
+        val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
+        return product.picture ?: throw NotFoundException("Product doesn't have any picture yet")
+    }
+
+    override fun getPictureAndPictureURL(productID: Long): Pair<ByteArray, String>
+    {
+        val product = productRepository.findByIdOrNull(productID) ?: throw NotFoundException("Product not found")
+        val image = product.picture ?: throw NotFoundException("Product doesn't have any picture yet")
+        return Pair(image, product.pictureURL)
     }
 }

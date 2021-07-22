@@ -12,8 +12,6 @@ data class ProductDTO (
 
     val description: String?,
 
-    val pictureURL: String?,
-
     val category: String?,
 
     @get:DecimalMin(value = "0.0", message="Negative price", inclusive = true)

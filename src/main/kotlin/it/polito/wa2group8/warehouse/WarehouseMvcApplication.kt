@@ -35,7 +35,7 @@ class WarehouseMvcApplication
                 val category = categories[Random.nextInt(0,categories.size-1)]
                 val p = productRepository.save(Product(
                     null,"p$i", "description_p$i",
-                    "pictureULR_p$i", category, BigDecimal(Random.nextInt(1,100))
+                    category, BigDecimal(Random.nextInt(1,100))
                 ))
 
                 warehouses.forEach {
@@ -43,7 +43,7 @@ class WarehouseMvcApplication
                     val quantity = Random.nextInt(0,10)
                     if (choose == 1)
                     {
-                        productWarehouseRepository.save(ProductWarehouse(null, p, it, p.price, quantity))
+                        productWarehouseRepository.save(ProductWarehouse(null, p, it, quantity))
                     }
                 }
             }
